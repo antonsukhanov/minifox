@@ -1,4 +1,6 @@
-# Minifox — Little Arc for Firefox
+# Minifox — mini window and link peek for Firefox
+
+Inspired by Arc's Little Arc and Peek. Not affiliated with The Browser Company or Mozilla.
 
 Peek, copy URL and containers work on any OS. Routing links from other apps into the
 mini window uses [Finicky](https://github.com/johnste/finicky), so that part is macOS-only.

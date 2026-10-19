@@ -1,4 +1,4 @@
-// Minifox — "Little Arc" for Firefox.
+// Minifox — a mini window and link peek for Firefox.
 //
 // 1. Mini window: Finicky appends a #minifox_open_in_mini marker to links opened from other
 //    apps. We catch that navigation before the page loads and reopen the URL
