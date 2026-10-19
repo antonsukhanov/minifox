@@ -1,7 +1,13 @@
 {
   "addons": {
     "minifox@sukhanov.cloud": {
-      "updates": []
+      "updates": [
+        {
+          "version": "1.0.0",
+          "update_link": "https://github.com/antonsukhanov/minifox/releases/download/v1.0.0/minifox-1.0.0.xpi",
+          "update_hash": "sha256:9e4f7066cfae3a0b5acd6124369fdde84cfae34600c225f4f97fa6bfa153bcc2"
+        }
+      ]
     }
   }
 }
