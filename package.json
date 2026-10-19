@@ -1,6 +1,6 @@
 {
   "name": "minifox",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "private": true,
   "description": "Compact mini window for links from other apps, and Shift+click link previews (Peek) for Firefox.",
   "license": "MIT",
