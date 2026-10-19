@@ -1,17 +1,50 @@
-# Minifox — mini window and link peek for Firefox
+# Minifox
 
+A mini window for links from other apps and Shift+click link previews, for Firefox.
 Inspired by Arc's Little Arc and Peek. Not affiliated with The Browser Company or Mozilla.
 
-Peek, copy URL and containers work on any OS. Routing links from other apps into the
-mini window uses [Finicky](https://github.com/johnste/finicky), so that part is macOS-only.
+## Mini window
 
-- **Mini window.** Links opened from other apps land in a compact window in the
-  middle of the screen, with a floating URL bar: back, URL, copy, *Open in Firefox*, close.
-- **Peek.** Shift+click any link inside Firefox to preview it in an overlay.
-- **Copy URL.** ⇧⌘C copies the current page URL (inside Peek — the previewed page)
-  and shows a small toast.
-- **Containers.** Mini windows and tabs opened from Peek or a mini window keep the
-  source tab's container; private stays private.
+Links you open in other apps land in a compact window in the middle of the screen
+instead of a new tab. **Open in Firefox** (⇧⌘O) moves the page to the main window.
+
+![A link from another app opens in the mini window; Open in Firefox moves it to the main window](docs/mini-window.gif)
+
+The toolbar hides when you scroll down and comes back when you scroll up or move the
+pointer to the top. Click the URL to copy it. macOS only — routing uses
+[Finicky](https://github.com/johnste/finicky).
+
+## Peek
+
+Shift+click any link to preview it in an overlay. **Open in tab** (⇧⌘O) keeps it, Esc
+closes it.
+
+![Shift+click a link to preview it in an overlay, then open it in a tab](docs/peek.gif)
+
+Sites that forbid embedding (GitHub, Google, …) still load in the preview.
+
+## Copy URL
+
+⇧⌘C copies the page URL — in Peek, the previewed page.
+
+![⇧⌘C copies the page URL and shows a toast](docs/copy-url.gif)
+
+Everything opened from a tab keeps its container; private stays private.
+
+## Install
+
+1. Download `minifox-<version>.xpi` from the [latest release](../../releases/latest),
+   drag it into Firefox and allow access to all sites. Updates install automatically.
+2. In `about:config` set `browser.tabs.loadDivertedInBackground` to `true` — otherwise
+   Firefox raises the main window for every external link before the mini window
+   appears.
+3. macOS, for the mini window — Finicky routes links from other apps:
+   ```sh
+   brew install --cask finicky
+   cp extras/finicky.js ~/.finicky.js   # from this repo or the release
+   open -a Finicky                      # accept the default-browser prompt
+   ```
+   Check: `open https://github.com` in Terminal opens the mini window.
 
 ## Shortcuts
 
@@ -23,164 +56,52 @@ mini window uses [Finicky](https://github.com/johnste/finicky), so that part is 
 | Close Peek | Esc | Esc |
 | Close mini window | ⌘W | Ctrl+W |
 
-Toolbar buttons show the shortcut for the current platform. *Open full* can be rebound in
-`about:addons` → ⚙ → **Manage Extension Shortcuts**, and the buttons follow the new binding.
+*Open full* can be rebound in `about:addons` → ⚙ → **Manage Extension Shortcuts**. The
+defaults replace Firefox's *Show All Bookmarks* and the devtools element picker.
 
-Both default combos override Firefox's own: ⇧⌘O / Ctrl+Shift+O is *Show All Bookmarks*
-(still in the Bookmarks menu), ⇧⌘C / Ctrl+Shift+C is the devtools element picker on web
-pages (open devtools with ⌥⌘I / Ctrl+Shift+I instead).
+## Good to know
 
-## Install
+- In Peek you may look logged out: Total Cookie Protection gives the preview its own
+  cookies. *Open in tab* opens the page with your session.
+- Peek and the toolbar don't run on `about:` pages and addons.mozilla.org.
+- To keep some apps or sites out of the mini window, add them to `SKIP_OPENERS` /
+  `FULL_WINDOW_HOSTS` in `~/.finicky.js`. Firefox Developer Edition: rename both
+  `"Firefox"` there to `"Firefox Developer Edition"`.
 
-### 1. Finicky (routes external links)
+<details>
+<summary>More: mini window size, hiding Firefox's own toolbar, quirks</summary>
 
-```sh
-brew install --cask finicky
-cp extras/finicky.js ~/.finicky.js
-open -a Finicky
-```
+- Mini window size and position: `SIZE`, `POSITION` (`"center"` or `"top-right"`) and
+  `MARGIN` in `src/background.js`.
+- Firefox's read-only address bar in the mini window can be hidden with
+  `userChrome.css` (set `toolkit.legacyUserProfileCustomizations.stylesheets = true`,
+  restart). It also hides the address in sign-in popups:
+  ```css
+  #main-window[chromehidden~="toolbar"] #nav-bar { visibility: collapse !important; }
+  ```
+- An external link briefly creates a background tab before the mini window replaces it.
+  If the main window still flashes forward, check the `about:config` pref and relaunch
+  Finicky.
+- `browser.tabs.loadDivertedInBackground` also backgrounds `target="_blank"` links;
+  Minifox brings tabs opened by a plain click to the front (⌘-click and middle-click stay
+  in the background).
+- Popups that sites open themselves (OAuth, payments) are left alone. Mini windows
+  restored after a Firefox restart become plain popups.
 
-Accept Finicky's prompt to become the default browser, or set it in
-**System Settings → Desktop & Dock → Default web browser**.
-
-If you use Firefox Developer Edition, change both `"Firefox"` names in `~/.finicky.js`
-to `"Firefox Developer Edition"`.
-
-Then in Firefox's `about:config` set:
-
-```
-browser.tabs.loadDivertedInBackground = true
-```
-
-Without it Firefox raises the main window for every external link before the mini
-window appears. The pref also makes `target="_blank"` links on pages open in background
-tabs — the extension undoes that part: a tab opened by a plain click is brought to the
-front, while ⌘-click and middle-click still open in the background.
-
-### 2. The extension
-
-Download the signed `minifox-<version>.xpi` from the latest
-[GitHub Release](../../releases/latest), drag it into Firefox and allow access to all
-sites (needed for Peek and the URL bar). Later versions install automatically.
-
-Upgrading from a build with the old add-on ID (`minifox@local` or the *Mini Window*
-build): Firefox treats `minifox@sukhanov.cloud` as a new add-on. Remove the old one in
-`about:addons` first.
-
-**Quick test from source (until Firefox restarts):** `about:debugging#/runtime/this-firefox`
-→ **Load Temporary Add-on…** → pick `src/manifest.json`. Or run `pnpm start` (see
-[Development](#development)).
-
-### 3. Check
-
-- `open https://github.com` in Terminal → opens in the mini window.
-- Shift+click any link in Firefox → Peek.
-
-## Usage
-
-### Mini window
-- The URL bar hides when you scroll down and comes back when you scroll up or move
-  the pointer to the top edge. Click the URL to copy it.
-- **Open in Firefox** (or *Open full*, or the address bar icon) moves the page to the
-  main window, in the same container.
-- Links from apps and hosts in the exception lists in `~/.finicky.js` skip the mini
-  window and open as a focused tab in the main window.
-
-### Peek
-- Same toolbar as the mini window: back (inside the preview only), URL (click to copy),
-  copy, **Open in tab** (or *Open full*), open in mini window, close.
-- Close with **Esc**, a click on the backdrop, or ✕.
-- The preview frame lives in the tab's container, so container sessions carry over.
-- Sites that forbid embedding (GitHub, Google, …) still load: the extension strips
-  `X-Frame-Options` and `frame-ancestors` for the peek frame only. Other pages are untouched.
-- Because of Total Cookie Protection, a cross-site peek frame gets its own cookies, so
-  you may appear logged out in the preview. *Open in tab* / *Open in mini window* opens
-  the same page with your session.
-
-Peek and the URL bar don't run on `about:` pages or `addons.mozilla.org` — Firefox keeps
-extensions out of those. The *Open full* shortcut still works there.
-
-## Configuration
-
-- Mini window size, position (`"center"` or `"top-right"`) and margin: `SIZE`, `POSITION` and `MARGIN` in `src/background.js`.
-- Exceptions: `FULL_WINDOW_HOSTS` and `SKIP_OPENERS` in `~/.finicky.js`.
-  Find an app's bundle ID with `osascript -e 'id of app "Visual Studio Code"'`.
-
-## Optional: hide Firefox's own toolbar in the mini window
-
-With the extension's URL bar in place, Firefox's read-only address bar in popup windows
-is redundant. To hide it, set `toolkit.legacyUserProfileCustomizations.stylesheets = true`
-in `about:config`, then add to `<profile>/chrome/userChrome.css` and restart Firefox:
-
-```css
-/* Popup windows only */
-#main-window[chromehidden~="toolbar"] #nav-bar {
-  visibility: collapse !important;
-}
-```
-
-This applies to **all** popup windows, including sign-in popups (OAuth etc.), which will
-no longer show their address. Find your profile folder via `about:support` → *Profile Folder*.
-
-## Known quirks
-
-- An external link briefly creates a background tab in the main window before the
-  extension closes it. If the main window still flashes forward, check that
-  `browser.tabs.loadDivertedInBackground` is `true` and that Finicky picked up the new
-  config (quit and relaunch it).
-- New tabs opened by a page's own script without a click right before it (rare) stay in
-  the background.
-- If Firefox isn't running, the first external link launches it with your restored
-  session, so the main window appears too.
-- Popup windows that sites open themselves (OAuth sign-in, payments) are not mini
-  windows: they get no toolbar and *Open full* ignores them. Mini windows that Firefox
-  restores after a restart, or that were open while the extension updated, become
-  plain popups too.
+</details>
 
 ## Development
 
-Requires Node.js LTS (see `.nvmrc`) and pnpm (`corepack enable` or `npm i -g pnpm`).
-
 ```sh
-nvm use
-pnpm install
-pnpm start      # web-ext run: temporary Firefox profile with src/ loaded, auto-reload
-pnpm check      # node --check on all JS
-pnpm lint       # web-ext lint (errors fail, warnings don't)
-pnpm build      # zip src/ into web-ext-artifacts/
-pnpm icons      # re-render src/icons/*.png from assets/icons/*.svg
+nvm use && pnpm install
+pnpm start                # Firefox with src/ loaded, auto-reload
+pnpm check && pnpm lint   # what CI runs
+pnpm icons                # re-render src/icons/*.png from assets/icons/*.svg
 ```
 
-Layout:
+Only `src/` is packaged. The `#minifox_open_in_mini` / `#minifox_open_in_main` markers
+are a contract between `extras/finicky.js` and `src/background.js` — change both together.
 
-- `src/` — the extension; the only thing packaged into the `.xpi`.
-- `extras/finicky.js` — Finicky config, attached to each release.
-- `assets/icons/` — SVG sources of the icons.
-- `scripts/` — icon rendering and release helpers.
-- `updates.json` — update manifest for installed copies; maintained by the release workflow.
-- `.github/workflows/` — CI (`ci.yml`) and release (`release.yml`).
-
-The `#minifox_open_in_mini` / `#minifox_open_in_main` markers are a contract between
-`extras/finicky.js` and `src/background.js` — change both together.
-
-## Releasing
-
-```sh
-pnpm release 1.2.3        # bumps src/manifest.json + package.json, commits, tags v1.2.3
-git push --follow-tags    # the tag starts the release workflow
-```
-
-The workflow checks that the tag matches `manifest.json`, builds and signs the `.xpi`
-with AMO (unlisted channel), and publishes a GitHub Release with the `.xpi` and
-`extras/finicky.js`, with notes from the commits since the previous tag. It then adds
-the release to `updates.json` on `main` — installed copies poll it through `update_url`
-and update themselves. AMO never signs the same version twice, so every release needs
-a new version.
-
-Signing needs two repository secrets, from
-https://addons.mozilla.org/developers/addon/api/key/:
-
-| Secret | Value |
-|---|---|
-| `AMO_JWT_ISSUER` | JWT issuer, like `user:12345:678` |
-| `AMO_JWT_SECRET` | JWT secret |
+**Release:** `pnpm release 1.2.3 && git push --follow-tags`. The tag workflow signs the
+`.xpi` with AMO (secrets `AMO_JWT_ISSUER`, `AMO_JWT_SECRET`), publishes a GitHub Release
+and updates `updates.json` for auto-updates.
