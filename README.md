@@ -59,7 +59,7 @@ front, while ⌘-click and middle-click still open in the background.
 
 Download the signed `minifox-<version>.xpi` from the latest
 [GitHub Release](../../releases/latest), drag it into Firefox and allow access to all
-sites (needed for Peek and the URL bar).
+sites (needed for Peek and the URL bar). Later versions install automatically.
 
 Upgrading from a build with the old add-on ID (`minifox@local` or the *Mini Window*
 build): Firefox treats `minifox@sukhanov.cloud` as a new add-on. Remove the old one in
@@ -155,6 +155,8 @@ Layout:
 - `extras/finicky.js` — Finicky config, attached to each release.
 - `assets/icons/` — SVG sources of the icons.
 - `scripts/` — icon rendering and release helpers.
+- `updates.json` — update manifest for installed copies; maintained by the release workflow.
+- `.github/workflows/` — CI (`ci.yml`) and release (`release.yml`).
 
 The `#minifox_open_in_mini` / `#minifox_open_in_main` markers are a contract between
 `extras/finicky.js` and `src/background.js` — change both together.
@@ -167,5 +169,16 @@ git push --follow-tags    # the tag starts the release workflow
 ```
 
 The workflow checks that the tag matches `manifest.json`, builds and signs the `.xpi`
-with AMO, and publishes a GitHub Release with the `.xpi` and `extras/finicky.js`.
-AMO never signs the same version twice, so every release needs a new version.
+with AMO (unlisted channel), and publishes a GitHub Release with the `.xpi` and
+`extras/finicky.js`, with notes from the commits since the previous tag. It then adds
+the release to `updates.json` on `main` — installed copies poll it through `update_url`
+and update themselves. AMO never signs the same version twice, so every release needs
+a new version.
+
+Signing needs two repository secrets, from
+https://addons.mozilla.org/developers/addon/api/key/:
+
+| Secret | Value |
+|---|---|
+| `AMO_JWT_ISSUER` | JWT issuer, like `user:12345:678` |
+| `AMO_JWT_SECRET` | JWT secret |
