@@ -1,0 +1,25 @@
+{
+  "name": "minifox",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Little Arc for Firefox: external links open in a compact mini window, Shift+click any link to peek at it.",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "check": "find src extras scripts -name '*.js' -o -name '*.mjs' | xargs -n1 node --check",
+    "lint": "web-ext lint",
+    "build": "web-ext build",
+    "start": "web-ext run",
+    "sign": "web-ext sign --channel=unlisted",
+    "icons": "node scripts/icons.mjs",
+    "release": "node scripts/release.mjs"
+  },
+  "devDependencies": {
+    "@resvg/resvg-js": "^2.6.2",
+    "web-ext": "^10.8.0"
+  },
+  "packageManager": "pnpm@12.14.0"
+}

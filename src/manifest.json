@@ -1,0 +1,42 @@
+{
+  "manifest_version": 2,
+  "name": "Minifox",
+  "version": "1.0.0",
+  "description": "Little Arc for Firefox: external links open in a compact mini window, Shift+click any link to peek at it.",
+  "permissions": [
+    "tabs",
+    "webNavigation",
+    "webRequest",
+    "webRequestBlocking",
+    "clipboardWrite",
+    "cookies",
+    "<all_urls>"
+  ],
+  "background": { "scripts": ["background.js"] },
+  "content_scripts": [
+    {
+      "matches": ["http://*/*", "https://*/*"],
+      "js": ["content.js"],
+      "run_at": "document_start",
+      "all_frames": true
+    }
+  ],
+  "page_action": {
+    "default_icon": { "16": "icons/page-action-16.png", "32": "icons/page-action-32.png" },
+    "default_title": "Open in main window"
+  },
+  "icons": { "48": "icons/icon-48.png", "96": "icons/icon-96.png" },
+  "commands": {
+    "open-in-main": {
+      "suggested_key": { "default": "Ctrl+Shift+O", "mac": "Command+Shift+O" },
+      "description": "Open full: move the mini window to the main window, or open the peek in a tab"
+    }
+  },
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "minifox@sukhanov.cloud",
+      "strict_min_version": "115.0",
+      "data_collection_permissions": { "required": ["none"] }
+    }
+  }
+}
