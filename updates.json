@@ -16,6 +16,11 @@
           "version": "1.1.0",
           "update_link": "https://github.com/antonsukhanov/minifox/releases/download/v1.1.0/minifox-1.1.0.xpi",
           "update_hash": "sha256:c14cb6e4c6039b7e740b5c47aa3b5e014903d7ba9fb50e2abf11816b97eddb95"
+        },
+        {
+          "version": "1.1.1",
+          "update_link": "https://github.com/antonsukhanov/minifox/releases/download/v1.1.1/minifox-1.1.1.xpi",
+          "update_hash": "sha256:1d33cd752863c8ac4a848a1042ff46b30b468742f008921a56884383bf8ad60a"
         }
       ]
     }
