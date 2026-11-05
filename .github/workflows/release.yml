@@ -92,8 +92,11 @@ jobs:
           gh release create "$GITHUB_REF_NAME" "$XPI" extras/finicky.js \
             --title "Minifox $GITHUB_REF_NAME" --notes-file notes.md --verify-tag
 
+      # Commit through the Contents API rather than git push: GitHub signs
+      # API commits, and main only accepts signed commits.
       - name: Update updates.json on main
         env:
+          GH_TOKEN: ${{ github.token }}
           VERSION: ${{ steps.version.outputs.version }}
           XPI: ${{ steps.xpi.outputs.path }}
         run: |
@@ -102,8 +105,8 @@ jobs:
           git fetch origin main
           git checkout -B main origin/main
           node scripts/updates-json.mjs "$VERSION" "$RUNNER_TEMP/$XPI" "$link"
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add updates.json
-          git commit -m "Update updates.json for $GITHUB_REF_NAME"
-          git push origin main
+          sha=$(gh api "repos/$GITHUB_REPOSITORY/contents/updates.json?ref=main" --jq .sha)
+          gh api -X PUT "repos/$GITHUB_REPOSITORY/contents/updates.json" \
+            -f message="Update updates.json for $GITHUB_REF_NAME" \
+            -f content="$(base64 -w0 updates.json)" \
+            -f sha="$sha" -f branch=main
