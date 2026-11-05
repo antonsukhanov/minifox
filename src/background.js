@@ -30,8 +30,8 @@ const CLICK_WINDOW_MS = 1500;
 
 // Mini window size as a share of the screen (never smaller than MIN_SIZE),
 // position ("center" or "top-right") and screen margin.
-const SIZE_RATIO = { width: 0.65, height: 0.85 };
-const MIN_SIZE = { width: 1000, height: 760 };
+const SIZE_RATIO = { width: 0.55, height: 0.8 };
+const MIN_SIZE = { width: 900, height: 760 };
 const POSITION = "center";
 const MARGIN = 24;
 
