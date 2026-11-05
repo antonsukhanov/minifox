@@ -17,7 +17,10 @@ const SKIP_OPENERS = [
   // "com.microsoft.VSCode",
 ];
 
-const isMarked = (href) => href.endsWith(MINI) || href.endsWith(MAIN);
+// The marker's "#" may come back percent-encoded ("%23") when the URL already
+// has a #fragment of its own.
+const isMarked = (href) =>
+  [MINI, MAIN].some((m) => href.endsWith(m) || href.endsWith("%23" + m.slice(1)));
 
 function wantsMainWindow(url, opener) {
   if (opener && SKIP_OPENERS.includes(opener.bundleId)) return true;

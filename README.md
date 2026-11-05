@@ -71,7 +71,7 @@ defaults replace Firefox's *Show All Bookmarks* and the devtools element picker.
 <details>
 <summary>More: mini window size, hiding Firefox's own toolbar, quirks</summary>
 
-- Mini window size and position: `SIZE`, `POSITION` (`"center"` or `"top-right"`) and
+- Mini window size and position: `SIZE_RATIO` (share of the screen), `MIN_SIZE`, `POSITION` (`"center"` or `"top-right"`) and
   `MARGIN` in `src/background.js`.
 - Firefox's read-only address bar in the mini window can be hidden with
   `userChrome.css` (set `toolkit.legacyUserProfileCustomizations.stylesheets = true`,

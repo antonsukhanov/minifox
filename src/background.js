@@ -14,12 +14,24 @@
 const MARK = "#minifox_open_in_mini";
 const MAIN_MARK = "#minifox_open_in_main";
 
+// URL without the trailing marker, or null if it isn't marked. When the URL
+// already has a #fragment (e.g. AWS SSO "#/device?user_code=…"), the appended
+// marker's "#" arrives percent-encoded as "%23".
+function unmark(url, mark) {
+  if (url.endsWith(mark)) return url.slice(0, -mark.length);
+  const enc = "%23" + mark.slice(1);
+  if (url.endsWith(enc)) return url.slice(0, -enc.length);
+  return null;
+}
+
 // How long after a plain click a new tab from that page still counts as
 // "opened by the click" and gets brought to the front.
 const CLICK_WINDOW_MS = 1500;
 
-// Mini window size, position ("center" or "top-right") and screen margin.
-const SIZE = { width: 1000, height: 760 };
+// Mini window size as a share of the screen (never smaller than MIN_SIZE),
+// position ("center" or "top-right") and screen margin.
+const SIZE_RATIO = { width: 0.65, height: 0.85 };
+const MIN_SIZE = { width: 1000, height: 760 };
 const POSITION = "center";
 const MARGIN = 24;
 
@@ -50,8 +62,12 @@ function containerOpts(ctx) {
 function popupGeometry() {
   // `screen` is available in MV2 background pages.
   const s = window.screen;
-  const width = Math.min(SIZE.width, s.availWidth - MARGIN * 2);
-  const height = Math.min(SIZE.height, s.availHeight - MARGIN * 2);
+  const fit = (dim, avail) => Math.round(Math.min(
+    Math.max(avail * SIZE_RATIO[dim], MIN_SIZE[dim]),
+    avail - MARGIN * 2
+  ));
+  const width = fit("width", s.availWidth);
+  const height = fit("height", s.availHeight);
   const x0 = s.availLeft || 0;
   const y0 = s.availTop || 0;
 
@@ -109,11 +125,12 @@ async function openInMain(url, ctx = null, closeWindowId = null) {
 // (browser.tabs.loadDivertedInBackground = true), so we load the clean URL
 // and bring the tab and its window forward ourselves.
 browser.webNavigation.onBeforeNavigate.addListener(async ({ tabId, frameId, url }) => {
-  if (frameId !== 0 || !url.endsWith(MAIN_MARK) || handled.has(tabId)) return;
+  const clean = frameId === 0 ? unmark(url, MAIN_MARK) : null;
+  if (clean == null || handled.has(tabId)) return;
   handled.add(tabId);
   try {
     const tab = await browser.tabs.update(tabId, {
-      url: url.slice(0, -MAIN_MARK.length),
+      url: clean,
       active: true,
     });
     await browser.windows.update(tab.windowId, { focused: true });
@@ -125,10 +142,9 @@ browser.webNavigation.onBeforeNavigate.addListener(async ({ tabId, frameId, url 
 });
 
 browser.webNavigation.onBeforeNavigate.addListener(async ({ tabId, frameId, url }) => {
-  if (frameId !== 0 || !url.endsWith(MARK) || handled.has(tabId)) return;
+  const clean = frameId === 0 ? unmark(url, MARK) : null;
+  if (clean == null || handled.has(tabId)) return;
   handled.add(tabId);
-
-  const clean = url.slice(0, -MARK.length);
 
   try {
     const tab = await browser.tabs.get(tabId);
