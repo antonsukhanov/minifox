@@ -1,0 +1,24 @@
+# Security updates only. Version updates are off (limit 0); Dependabot still
+# opens PRs for advisories, grouped into one PR per ecosystem. Which
+# severities get a PR is set by the auto-triage rules in repo settings.
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 0
+    groups:
+      npm-security:
+        applies-to: security-updates
+        patterns: ["*"]
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    open-pull-requests-limit: 0
+    groups:
+      actions-security:
+        applies-to: security-updates
+        patterns: ["*"]
